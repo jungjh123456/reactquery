@@ -15,3 +15,8 @@ export const postTodos = async (data) => {
   console.log(res);
   return res.json();
 };
+
+export async function getStaticProps() {
+  const posts = await getTodos();
+  return { props: { posts } };
+}
