@@ -189,6 +189,14 @@ Todos.jsx에 이런식으로 지정해주고 button을 만든 후
 
 이렇게 onClick을 수행하면 잘 작동 된다.
 
+## api 시간 마다 갱신하기
+
+시간마다 호출하기 위해서는 일반적으로 react query를 사용하지 않고 할때는 setInterval을 이용했지만 react query에서는 refetchInterval을 주면 된다. (자체적으로 setInterval을 사용하는 건가..?)
+
+```js
+const { data, isLoading, isSuccess, error } = useQuery("posts", getTodos, { refetchInterval: 10000 });
+```
+
 ## 리엑트 쿼리
 
 react query는 React에서 서버 상태를 가져오고 캐싱하고 동기화하고 업데이트 하는 작업을 쉽게 만든다.
@@ -196,3 +204,78 @@ react query는 React에서 서버 상태를 가져오고 캐싱하고 동기화�
 직접 사용해보니 사용자가 페이지에 대기 상태에서 다시 마우스를 내 사이트에 클릭 할때마다 호출이 되거나 5분마다 오래된 캐시면 다시 호출 하는 것이 정말 편했다.
 
 redux saga를 사용할 때는 refresh말고 setInterval을 사용하여 5분마다 호출을 하였는데 react query를 사용해서 더 나은 사이트를 만들 수 있을 꺼 같다.
+
+## 리엑트 쿼리로 인피니티 스크롤 구현하기
+
+인피니티 스크롤을 구현하기 위해서는 보통 js 나 react 같은 경우 제일 하단에 div를 숨겨놓아서
+
+```js
+const obserberRef = useRef();
+const [obState, setObState] = useState(false);
+useEffect(() => {
+  const options = {
+    threshold: 0.2,
+    rootMargin: "0px",
+  };
+
+  const observer = new IntersectionObserver(function (entries, observer) {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) {
+        return;
+      }
+      fetchNextPage();
+      console.log(entry.isIntersecting);
+    });
+  }, options);
+  observer.observe(obserberRef.current);
+}, [fetchNextPage]);
+```
+
+이전 previousData를 array라는 변수에 저장해놓고
+intersectionObserver를 이용해 감지를 해서 페이지네이션 처럼 다음 페이지를 호출하여 array라는 변수로 push를 하여 구현할 수 있다.
+
+이렇게 구현할 수 있지만 마지막 페이지가 나온 후 또 호출을 하면 이것또한 구현하기에 힘이 든다.
+그래서 react query에서는 useInfiniteQuery 훅을 제공한다.
+
+첫번째 인자로 유니크한 키를 넣고 두번째로는 호출할 promise를 넣는다 마지막으로 3번째로는 옵션을 넣는다.
+
+```js
+const {
+  status,
+  data: infinitData,
+  error: infinitError,
+  isFetching,
+  isFetchingNextPage,
+  isFetchingPreviousPage,
+  fetchNextPage,
+  fetchPreviousPage,
+  hasNextPage,
+  hasPreviousPage,
+} = useInfiniteQuery(
+  "projects",
+  async ({ pageParam = 0 }) => {
+    return await fetchRepositories(pageParam);
+  },
+  {
+    getNextPageParam: (lastPage, allPages) => {
+      const maxPage = 14; // 한번에 30개씩 보여주기
+      const nextPage = allPages.length + 1; //
+      return nextPage <= maxPage ? nextPage : undefined; // 다음 데이터가 있는지 없는지 판단
+    },
+  }
+);
+```
+
+lastPage는 fetch callback의 리턴값이 전달되고 allPage는 배열안에 지금까지 불러온 데이터를 계속 축적하는 형태로 온다. ([[],[]])
+
+옵션에 maxPage (db에 있는 최대갯수) nextPage는 다음 페이지이다.
+
+infinitData를 보면 [[],[]]이런형식이라 한번 풀어줘야한다.
+
+```js
+const filter = infinitData?.pages?.map((item) => item.data);
+console.log(filter?.flat());
+return filter?.flat()?.map((item) => <div>{item}</div>);
+```
+
+이런 식으로 해서 인피니티 스크롤을 구현할 수 있었다.

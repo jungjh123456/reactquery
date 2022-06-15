@@ -1,3 +1,6 @@
+import axios from "axios";
+import client from "./client";
+
 export const getTodos = async () => {
   const res = await fetch("http://localhost:4000/posts");
 
@@ -20,3 +23,9 @@ export async function getStaticProps() {
   const posts = await getTodos();
   return { props: { posts } };
 }
+
+export const fetchRepositories = async (page) => {
+  console.log(page);
+  const res = await client.get(`http://localhost:4000/posts?_page=${page}&_limit=5`);
+  return res;
+};

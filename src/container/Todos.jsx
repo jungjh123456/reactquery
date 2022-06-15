@@ -1,8 +1,8 @@
-import React from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import React, { useEffect, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from "react-query";
 import Header from "../components/Header";
 import RecipeReviewCard from "../components/RecipeReviewCard";
-import { getTodos, postTodos } from "../lib/api/todos";
+import { fetchRepositories, getTodos, postTodos } from "../lib/api/todos";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import styled from "styled-components";
@@ -18,6 +18,8 @@ import Backdrop from "@mui/material/Backdrop";
 import Modal from "@mui/material/Modal";
 import Fade from "@mui/material/Fade";
 import Typography from "@mui/material/Typography";
+import axios from "axios";
+import { useInView } from "react-intersection-observer";
 const actions = [
   { icon: <FileCopyIcon />, name: "Copy" },
   { icon: <SaveIcon />, name: "Save" },
@@ -66,7 +68,7 @@ const Todos = (props) => {
   const queryClient = useQueryClient();
 
   // Queries
-  const { data, isLoading, isSuccess, error } = useQuery("posts", getTodos, { initialData: props.posts });
+  const { data, isLoading, isSuccess, error } = useQuery("posts", getTodos, { initialData: props.posts, refetchInterval: 100000 });
   const [open, setOpen] = React.useState(false);
   // const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -82,6 +84,62 @@ const Todos = (props) => {
     console.log(e);
     setOpen(true);
   };
+  const {
+    status,
+    data: infinitData,
+    error: infinitError,
+    isFetching,
+    isFetchingNextPage,
+    isFetchingPreviousPage,
+    fetchNextPage,
+    fetchPreviousPage,
+    hasNextPage,
+    hasPreviousPage,
+  } = useInfiniteQuery(
+    "projects",
+    async ({ pageParam = 0 }) => {
+      return await fetchRepositories(pageParam);
+    },
+    {
+      getNextPageParam: (lastPage, allPages) => {
+        // lastPage에는 fetch callback의 리턴값이 전달됨
+        // allPage에는 배열안에 지금까지 불러온 데이터를 계속 축적하는 형태 [[data], [data1], .......]
+        const maxPage = 14; // 한번에 30개씩 보여주기
+        const nextPage = allPages.length + 1; //
+        return nextPage <= maxPage ? nextPage : undefined; // 다음 데이터가 있는지 없는지 판단
+      },
+    }
+  );
+  console.log(infinitData);
+  const { ref, inView } = useInView({ threshold: 0.3 });
+  useEffect(() => {
+    // hasNextPage 다음 페이지가 있는지 여부, Boolean (getNextPageParam 리턴값에 의해서)
+    if (inView && hasNextPage) {
+      // fetchNextPage fetch callback 함수를 실행
+      fetchNextPage();
+    }
+  }, [inView]);
+  const filter = infinitData?.pages?.map((item) => item.data);
+  console.log(filter?.flat());
+  // const obserberRef = useRef();
+  // const [obState, setObState] = useState(false);
+  // useEffect(() => {
+  //   const options = {
+  //     threshold: 0.2,
+  //     rootMargin: "0px",
+  //   };
+
+  //   const observer = new IntersectionObserver(function (entries, observer) {
+  //     entries.forEach((entry) => {
+  //       if (!entry.isIntersecting) {
+  //         return;
+  //       }
+  //       fetchNextPage();
+  //       console.log(entry.isIntersecting);
+  //     });
+  //   }, options);
+  //   observer.observe(obserberRef.current);
+  // }, [fetchNextPage]);
   return (
     <>
       <Header />
@@ -100,7 +158,23 @@ const Todos = (props) => {
             })}
           </>
         )}
+        {filter?.flat()?.length ? (
+          <>
+            {filter?.flat().map((item) => {
+              return <RecipeReviewCard loading={!isSuccess} />;
+            })}
+          </>
+        ) : (
+          <>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 7, 8, 7, 8, 7, 8].map((item) => {
+              return <RecipeReviewCard loading={!isSuccess} />;
+            })}
+          </>
+        )}
       </DivGrid>
+      <button onClick={() => fetchNextPage()} ref={ref} style={{ height: "30px" }} disabled={!hasNextPage || isFetchingNextPage}>
+        {isFetchingNextPage ? "Loading more..." : hasNextPage ? "Load Newer" : "Nothing more to load"}
+      </button>
       {/* <button
         onClick={() => {
           mutation.mutate({

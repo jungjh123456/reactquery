@@ -60,7 +60,6 @@ export default function RecipeReviewCard({ loading }) {
   const handleExpandClick = () => {
     setExpanded(!expanded);
   };
-  console.log(loading);
   return (
     <DivWrap>
       <Card sx={{ maxWidth: "100%" }}>
