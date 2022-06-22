@@ -279,3 +279,31 @@ return filter?.flat()?.map((item) => <div>{item}</div>);
 ```
 
 이런 식으로 해서 인피니티 스크롤을 구현할 수 있었다.
+
+## react query로 간단한 pagenation기능
+
+react query로 간단히 pagenation기능을 만들려면 간단하다.
+
+```js
+const [page, setPage] = React.useState(1);
+```
+
+useState를 이용해서 page를 세팅해주고
+
+```js
+const { isLoading, isError, error, data, isFetching, isPreviousData } = useQuery(["posts", page], () => fetchPageRepositories(page), { keepPreviousData: true });
+```
+
+이렇게 한 후 버튼을 만들어 주면 된다.
+
+일반적이지는 않지만 이 keepPreviousData옵션은 useInfiniteQuery후크와도 완벽하게 작동하므로 시간이 지남에 따라 무한 쿼리 키가 변경되는 동안 사용자가 캐시된 데이터를 계속 볼 수 있도록 원활하게 할 수 있습니다.
+
+라고 react query에서 말해주는데
+
+keepPreviousData를 true로 설정하면 다음과 같은 몇 가지 새로운 이점을 얻을 수 있습니다.
+
+1. 쿼리 키가 변경되었더라도 새 데이터가 요청되는 동안 마지막으로 성공적으로 가져온 데이터를 사용할 수 있습니다.
+
+2. 새 데이터가 도착하면 이전 데이터가 원활하게 스왑되어 새 데이터를 표시합니다.
+
+3. isPreviousData는 쿼리가 현재 어떤 데이터를 제공하는지 알 수 있습니다.

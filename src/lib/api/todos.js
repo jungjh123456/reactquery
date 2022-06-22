@@ -29,3 +29,13 @@ export const fetchRepositories = async (page) => {
   const res = await client.get(`http://localhost:4000/posts?_page=${page}&_limit=5`);
   return res;
 };
+
+export const imgListGet = () => {
+  return client.get("https://picsum.photos/v2/list/");
+};
+
+export const fetchPageRepositories = async (page) => {
+  console.log(page);
+  const res = await client.get(`http://localhost:4000/posts?_page=${page}`);
+  return res.data;
+};
