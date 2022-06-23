@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from "react-query";
 import Header from "../components/Header";
 import RecipeReviewCard from "../components/RecipeReviewCard";
@@ -72,7 +72,6 @@ const Todos = (props) => {
   const [open, setOpen] = React.useState(false);
   // const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  console.log(data, isSuccess, isLoading);
   // Mutations
   const mutation = useMutation(postTodos, {
     onSuccess: () => {
@@ -81,7 +80,6 @@ const Todos = (props) => {
     },
   });
   const clickIcon = (e) => {
-    console.log(e);
     setOpen(true);
   };
   const {
@@ -120,58 +118,41 @@ const Todos = (props) => {
     }
   }, [inView]);
   const filter = infinitData?.pages?.map((item) => item.data);
-  console.log(filter?.flat());
-  // const obserberRef = useRef();
-  // const [obState, setObState] = useState(false);
-  // useEffect(() => {
-  //   const options = {
-  //     threshold: 0.2,
-  //     rootMargin: "0px",
-  //   };
 
-  //   const observer = new IntersectionObserver(function (entries, observer) {
-  //     entries.forEach((entry) => {
-  //       if (!entry.isIntersecting) {
-  //         return;
-  //       }
-  //       fetchNextPage();
-  //       console.log(entry.isIntersecting);
-  //     });
-  //   }, options);
-  //   observer.observe(obserberRef.current);
-  // }, [fetchNextPage]);
   return (
     <>
       <Header />
       {/* <QuiltedImageList /> */}
-      <DivGrid>
-        {data?.length ? (
-          <>
-            {data.map((item) => {
-              return <RecipeReviewCard loading={!isSuccess} />;
-            })}
-          </>
-        ) : (
-          <>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 7, 8, 7, 8, 7, 8].map((item) => {
-              return <RecipeReviewCard loading={!isSuccess} />;
-            })}
-          </>
-        )}
-        {filter?.flat()?.length ? (
-          <>
-            {filter?.flat().map((item) => {
-              return <RecipeReviewCard loading={!isSuccess} />;
-            })}
-          </>
-        ) : (
-          <>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 7, 8, 7, 8, 7, 8].map((item) => {
-              return <RecipeReviewCard loading={!isSuccess} />;
-            })}
-          </>
-        )}
-      </DivGrid>
+      <Suspense fallback={() => <div>로딩중..</div>}>
+        <DivGrid>
+          {data?.length ? (
+            <>
+              {data.map((item) => {
+                return <RecipeReviewCard loading={!isSuccess} />;
+              })}
+            </>
+          ) : (
+            <>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 7, 8, 7, 8, 7, 8].map((item) => {
+                return <RecipeReviewCard loading={!isSuccess} />;
+              })}
+            </>
+          )}
+          {filter?.flat()?.length ? (
+            <>
+              {filter?.flat().map((item) => {
+                return <RecipeReviewCard loading={!isSuccess} />;
+              })}
+            </>
+          ) : (
+            <>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 7, 8, 7, 8, 7, 8].map((item) => {
+                return <RecipeReviewCard loading={!isSuccess} />;
+              })}
+            </>
+          )}
+        </DivGrid>
+      </Suspense>
       <button onClick={() => fetchNextPage()} ref={ref} style={{ height: "30px" }} disabled={!hasNextPage || isFetchingNextPage}>
         {isFetchingNextPage ? "Loading more..." : hasNextPage ? "Load Newer" : "Nothing more to load"}
       </button>
