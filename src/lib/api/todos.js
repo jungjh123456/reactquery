@@ -31,7 +31,7 @@ export const fetchRepositories = async (page) => {
 };
 
 export const imgListGet = () => {
-  return client.get("https://picsum.photos/v2/list/");
+  return client.get("https://picsum.photos/v2/list/?limit=10");
 };
 
 export const fetchPageRepositories = async (page) => {
