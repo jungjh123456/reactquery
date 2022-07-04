@@ -31,6 +31,7 @@ import testimg27 from "../imgs/testimg27.jpg";
 import testimg28 from "../imgs/testimg28.jpg";
 import testimg29 from "../imgs/testimg29.jpg";
 import testimg30 from "../imgs/testimg30.jpg";
+import { LazyLoadComponent, LazyLoadImage } from "react-lazy-load-image-component";
 
 const Images = (props) => {
   const { data, isLoading, isSuccess, error } = useQuery("imge", imgListGet, { initialData: props.posts, refetchInterval: 100000 });
@@ -60,42 +61,7 @@ const Images = (props) => {
         });
       };
 
-      Promise.all(
-        [
-          testimg1,
-          testimg2,
-          testimg3,
-          testimg4,
-          testimg5,
-          testimg6,
-          testimg7,
-          testimg8,
-          testimg9,
-          testimg10,
-          testimg11,
-          testimg12,
-          testimg13,
-          testimg14,
-          testimg15,
-          testimg16,
-          testimg17,
-          testimg18,
-          testimg19,
-          testimg20,
-          testimg21,
-          testimg22,
-          testimg23,
-          testimg24,
-          testimg25,
-          testimg26,
-
-          testimg27,
-          testimg28,
-          testimg29,
-
-          testimg30,
-        ].map((image) => loadImage(image))
-      )
+      Promise.all(data?.data.map((image) => loadImage(image.download_url)))
         .then(() => setImgsLoaded(true))
         .catch((err) => console.log("Failed to load images", err));
     }
@@ -106,13 +72,14 @@ const Images = (props) => {
   //   Promise.all(data?.data?.map((item) => item.download_url)).then((res) => setUrl(res));
   // }, [data?.data]);
   console.log(url);
+  console.log(process.env);
   return (
-    <div ref={refImage}>
-      {/* {data?.data?.map((item) => {
-        return <img src={item.download_url} alt="" width={500} height={500} />;
-      })} */}
-
-      {[
+    <LazyLoadComponent>
+      <div ref={refImage}>
+        {data?.data?.map((item) => {
+          return <LazyLoadImage effect="blur" placeholderSrc={"/logo.png"} src={item.download_url} alt="dd" width="500px" height="500px" />;
+        })}
+        {/* {[
         testimg1,
         testimg2,
         testimg3,
@@ -147,12 +114,13 @@ const Images = (props) => {
         testimg30,
       ]?.map((item, i) => {
         if (imgsLoad) {
-          return <img key={i} src={item} alt="me" width={500} height={500} />;
+          return <LazyLoadImage effect="blur" key={i} src={item} alt="me" width="500px" height="500px" />;
         } else {
           return <div>loading</div>;
         }
-      })}
-    </div>
+      })} */}
+      </div>
+    </LazyLoadComponent>
   );
 };
 

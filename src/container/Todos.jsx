@@ -42,21 +42,28 @@ const style = {
 };
 const DivGrid = styled.div`
   /* display: grid; */
-  display: flex;
-  flex-wrap: wrap;
-  padding: 16px;
-  gap: 16px;
+  & > .container {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 16px;
+    gap: 16px;
+    max-width: 1800px;
+    margin: 0 auto;
+  }
 
   @media screen and (min-width: 600px) and (max-width: 1200px) {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    & > .container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
     /* flex-wrap: wrap; */
     /* width: 100%; */
     /* max-width: 345px; */
   }
   @media screen and (min-width: 1200px) {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    /* display: grid; */
+    /* grid-template-columns: repeat(5, 1fr); */
     /* border: 1px solid red; */
     /* flex-wrap: wrap; */
     /* width: 100%; */
@@ -125,32 +132,34 @@ const Todos = (props) => {
       {/* <QuiltedImageList /> */}
       <Suspense fallback={() => <div>로딩중..</div>}>
         <DivGrid>
-          {data?.length ? (
-            <>
-              {data.map((item) => {
-                return <RecipeReviewCard loading={!isSuccess} />;
-              })}
-            </>
-          ) : (
-            <>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 7, 8, 7, 8, 7, 8].map((item) => {
-                return <RecipeReviewCard loading={!isSuccess} />;
-              })}
-            </>
-          )}
-          {filter?.flat()?.length ? (
-            <>
-              {filter?.flat().map((item) => {
-                return <RecipeReviewCard loading={!isSuccess} />;
-              })}
-            </>
-          ) : (
-            <>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 7, 8, 7, 8, 7, 8].map((item) => {
-                return <RecipeReviewCard loading={!isSuccess} />;
-              })}
-            </>
-          )}
+          <div className="container">
+            {data?.length ? (
+              <>
+                {data.map((item) => {
+                  return <RecipeReviewCard loading={!isSuccess} />;
+                })}
+              </>
+            ) : (
+              <>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 7, 8, 7, 8, 7, 8].map((item) => {
+                  return <RecipeReviewCard loading={!isSuccess} />;
+                })}
+              </>
+            )}
+            {filter?.flat()?.length ? (
+              <>
+                {filter?.flat().map((item) => {
+                  return <RecipeReviewCard loading={!isSuccess} />;
+                })}
+              </>
+            ) : (
+              <>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 7, 8, 7, 8, 7, 8].map((item) => {
+                  return <RecipeReviewCard loading={!isSuccess} />;
+                })}
+              </>
+            )}
+          </div>
         </DivGrid>
       </Suspense>
       <button onClick={() => fetchNextPage()} ref={ref} style={{ height: "30px" }} disabled={!hasNextPage || isFetchingNextPage}>
